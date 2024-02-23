@@ -1,7 +1,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Project README</title>
 <body>
 <h1>Project README</h1>
 <h2>Project Overview</h2>
