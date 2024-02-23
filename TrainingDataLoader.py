@@ -1,6 +1,4 @@
-import os
 import numpy as np
-
 
 def unique_chars_in_file(file_path):
     # Initialize an empty set to store unique characters
@@ -66,10 +64,3 @@ def file_to_binary_matrix(file_path):
     binary_matrix = np.array(binary_matrix)
 
     return binary_matrix
-
-
-# Example usage
-# First, generate the character to binary mapping
-  # Replace with your file path
-
-# Then, create the binary matrix for the file
