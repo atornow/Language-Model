@@ -87,6 +87,33 @@ def mainPass(Batch, Targets, prevHidden, U, W, V, b, c):
     # Return summed loss and derivatives aswell as the last state vector for next pass
     return loss, dOfU, dOfW, dOfV, dOfB, dOfC, savedHiddens[len(Batch) - 1]
 
+def sampleLanguage(chars, seed, prevHidden, size, U, W, V, b, c):
+    indexToChar = {i: ch for i, ch in enumerate(chars)}
+    oneHot = {}
+    savedLogits = {}
+    savedProbs = {}
+    savedHiddens = {}
+    savedHiddens[-1] = np.copy(prevHidden)
+    returnString = indexToChar[seed]
+
+    # Forward pass through Batch
+    for char in range(size):
+        oneHot[char] = np.zeros_like(c)  # encode in 1-of-vocab representation
+
+        if char == 0:
+            oneHot[char][0, seed] = 1
+        else:
+            oneHot[char][0, nextChar] = 1
+
+        savedHiddens[char] = hiddenFunction(b + np.dot(savedHiddens[char - 1], W) + np.dot(oneHot[char], U))
+        savedLogits[char] = c + np.dot(savedHiddens[char], V)
+        savedProbs[char] = softMax(savedLogits[char])
+
+        prob_array_for_char = savedProbs[char]
+        nextChar = np.argmax(prob_array_for_char)
+        returnString += (indexToChar[np.argmax(prob_array_for_char)])
+
+    return returnString
 
 def plot_error_set(ErrorSet):
     # Determine the size of ErrorSet

@@ -3,8 +3,10 @@ import ModelFunctions
 
 # Hyperparameters of model
 hiddenSize = 100
-learningRate = 0.1
-batchSize = 25
+learningRate = 0.00001
+batchSize = 30
+size = 100
+decay = 0.9
 
 # Load data from txt and create dictionaries for one-hot encoding
 data = open('ScifiData.txt', 'r').read()
@@ -14,10 +16,9 @@ indexToChar = {i: ch for i, ch in enumerate(chars)}
 dataSize, vocab = len(data), len(chars)
 
 # Initialize weight matrices and bias vectors
-U = np.random.uniform(low=-0.1, high=0.1, size=(vocab, hiddenSize))
-V = np.random.uniform(low=-0.1, high=0.1, size=(hiddenSize, vocab))
-W = np.random.uniform(low=-0.1, high=0.1, size=(hiddenSize, hiddenSize))
-h = np.random.uniform(low=-0.3, high=0.3, size=(1, hiddenSize))
+U = np.random.uniform(low=-0.01, high=0.01, size=(vocab, hiddenSize))
+V = np.random.uniform(low=-0.01, high=0.01, size=(hiddenSize, vocab))
+W = np.random.uniform(low=-0.01, high=0.01, size=(hiddenSize, hiddenSize))
 b = np.zeros((1, hiddenSize))
 c = np.zeros((1, vocab))
 
@@ -31,7 +32,8 @@ memdOfV = np.zeros_like(V)
 # Get starting loss point
 average_loss = -np.log(1.0 / vocab) * batchSize  # Initial loss at iteration 0
 iteration_counter, data_pointer = 0, 0
-while True:
+lossOverItterations = []
+while iteration_counter < 100000:
     # Keep track of current iteration and place in batch
 
     if data_pointer + batchSize + 1 >= len(data) or iteration_counter == 0:
@@ -50,12 +52,21 @@ while True:
     if iteration_counter % 100 == 0:
         print('Iteration ' + str(iteration_counter) + ' loss: ' + str(average_loss))
 
+    if iteration_counter % 100 == 0:
+        seed = Batch[-1]
+        returnString = ModelFunctions.sampleLanguage(chars, seed, prevHidden, size, U, W, V, b, c)
+        print(returnString)
+        lossOverItterations.append(average_loss)
+        print(U[1][1])
+
     # Update the weights and bias with adagrad method
     for parameter, gradient, memory in zip([U, W, V, b, c], [dOfU, dOfW, dOfV, dOfB, dOfC],
                                            [memdOfU, memdOfW, memdOfV, memdOfB, memdOfC]):
-        memory += gradient ** 2
+        memory = decay * memory + (1 - decay) * (gradient ** 2)
         parameter += -learningRate * gradient / np.sqrt(memory + 1e-8)
 
 
     data_pointer += batchSize
     iteration_counter += 1
+
+ModelFunctions.plot_error_set(lossOverItterations)
